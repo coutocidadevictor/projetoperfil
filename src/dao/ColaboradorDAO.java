@@ -35,8 +35,8 @@ public class ColaboradorDAO {
         String sqlQuery = "insert into colaboradores(nomeColaboradores, telefoneColaboradores) values (?, ?)";
         PreparedStatement cadastro = bd.getConexao().prepareStatement(sqlQuery);
 
-        cadastro.setString(1, S.getNomeColaboradores());
-        cadastro.setString(2, S.getTelefoneColaboradores());
+        cadastro.setString(1, S.getNome());
+        cadastro.setString(2, S.getTelefone());
         cadastro.execute();
         System.out.println(sqlQuery);
     }
@@ -58,8 +58,8 @@ public class ColaboradorDAO {
             while (rs.next()) {
             Colaborador colaborador = new Colaborador();
             colaborador.setIdColaboradores(rs.getInt("IdColaboradores"));
-            colaborador.setNomeColaboradores(rs.getString("nomeColaboradores"));
-            colaborador.setTelefoneColaboradores(rs.getString("telefoneColaboradores"));
+            colaborador.setNome(rs.getString("nomeColaboradores"));
+            colaborador.setTelefone(rs.getString("telefoneColaboradores"));
             listaColaboradores.add(colaborador);
             }
             return listaColaboradores;
@@ -98,8 +98,8 @@ public class ColaboradorDAO {
         Conexao bd = new Conexao();
         bd.conectar();
         String query = "update colaboradores set nomeColaboradores = '" + 
-                B.getNomeColaboradores()+ "', telefoneColaboradores = '" + 
-                B.getTelefoneColaboradores()+ "' where IdColaboradores = " + 
+                B.getNome()+ "', telefoneColaboradores = '" + 
+                B.getTelefone()+ "' where IdColaboradores = " + 
                 B.getIdColaboradores();
         PreparedStatement consulta = bd.getConexao().prepareStatement(query);
         try {

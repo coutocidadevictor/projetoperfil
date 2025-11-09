@@ -254,8 +254,8 @@ public class TelaColaboradores extends javax.swing.JInternalFrame {
         String nome = (String) tabelaPrincipalColaboradores.getValueAt(linha, 1);
         String telefone = (String) tabelaPrincipalColaboradores.getValueAt(linha, 2);
         
-        excluir.setNomeColaboradores(nome);
-        excluir.setTelefoneColaboradores(telefone);
+        excluir.setNome(nome);
+        excluir.setTelefone(telefone);
         excluir.setIdColaboradores(id);
 
         try {
@@ -276,8 +276,8 @@ public class TelaColaboradores extends javax.swing.JInternalFrame {
         //esse objeto pega os métodos gets e sets
         Colaborador cadastro = new Colaborador();
 
-        cadastro.setNomeColaboradores(jtfNomeColaboradores.getText());
-        cadastro.setTelefoneColaboradores(jtfTelefoneColaboradores.getText());
+        cadastro.setNome(jtfNomeColaboradores.getText());
+        cadastro.setTelefone(jtfTelefoneColaboradores.getText());
         
         if (jtfCodigoColaboradores.getText().equals("")) {
 

@@ -86,7 +86,7 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
             
             for (Colaborador colaborador: listaColaboradores){
                 if (colaborador.getIdColaboradores()== atendimento.getIdColaboradores()){
-                    nomeColaborador = colaborador.getNomeColaboradores();
+                    nomeColaborador = colaborador.getNome();
                     break;
                 }
             }

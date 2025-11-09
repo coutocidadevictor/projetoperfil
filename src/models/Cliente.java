@@ -2,13 +2,17 @@ package models;
 
 public class Cliente {
 
-    int IdClientes;
-    String nomeClientes, telefoneClientes;
+    private int IdClientes;
+    private String nome;
+    private String telefone;
+
+    public Cliente() {
+    }
 
     public Cliente(int IdClientes, String nomeClientes, String telefoneClientes) {
         this.IdClientes = IdClientes;
-        this.nomeClientes = nomeClientes;
-        this.telefoneClientes = telefoneClientes;
+        this.nome = nomeClientes;
+        this.telefone = telefoneClientes;
     }
 
     public int getIdClientes() {
@@ -20,25 +24,22 @@ public class Cliente {
     }
 
     public String getNomeClientes() {
-        return nomeClientes;
+        return nome;
     }
 
-    public void setNomeClientes(String nomeClientes) {
-        this.nomeClientes = nomeClientes;
+    public void setNomeClientes(String nome) {
+        this.nome = nome;
     }
 
-    public String getTelefoneClientes() {
-        return telefoneClientes;
+    public String getTelefone() {
+        return telefone;
     }
 
-    public void setTelefoneClientes(String telefoneClientes) {
-        this.telefoneClientes = telefoneClientes;
-    }
-   
-    public Cliente() {
+    public void setTelefone(String clientes) {
+        this.telefone = clientes;
     }
 
-    public String toString(){
-        return nomeClientes;
+    public String toString() {
+        return nome;
     }
 }

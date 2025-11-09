@@ -2,9 +2,19 @@ package models;
 
 public class Colaborador {
 
-    int IdColaboradores;
-    String nomeColaboradores, telefoneColaboradores;
-    
+    private int IdColaboradores;
+    private String nome;
+    private String telefone;
+
+    public Colaborador() {
+    }
+
+    public Colaborador(int IdColaboradores, String nome, String telefone) {
+        this.IdColaboradores = IdColaboradores;
+        this.nome = nome;
+        this.telefone = telefone;
+    }
+
     public int getIdColaboradores() {
         return IdColaboradores;
     }
@@ -13,37 +23,23 @@ public class Colaborador {
         this.IdColaboradores = IdColaboradores;
     }
 
-    public void setIdColaboradores(String IdColaboradores) {
-        this.IdColaboradores = Integer.parseInt(IdColaboradores);
-    }
-    
-    public String getNomeColaboradores() {
-        return nomeColaboradores;
+    public String getNome() {
+        return nome;
     }
 
-    public void setNomeColaboradores(String nomeColaboradores) {
-        this.nomeColaboradores = nomeColaboradores;
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
-    public String getTelefoneColaboradores() {
-        return telefoneColaboradores;
+    public String getTelefone() {
+        return telefone;
     }
 
-    public void setTelefoneColaboradores(String telefoneColaboradores) {
-        this.telefoneColaboradores = telefoneColaboradores;
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
     }
 
-
-    public Colaborador(int IdColaboradores, String nomeColaboradores, String valor) {
-        this.IdColaboradores = IdColaboradores;
-        this.nomeColaboradores = nomeColaboradores;
-        this.telefoneColaboradores = telefoneColaboradores;
-    }
-
-    public Colaborador() {
-    }
-
-    public String toString(){
-        return nomeColaboradores;
+    public String toString() {
+        return nome;
     }
 }

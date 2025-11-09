@@ -30,7 +30,7 @@ public class ClienteDAO {
         PreparedStatement cadastro = bd.getConexao().prepareStatement(sqlQuery);
 
         cadastro.setString(1, S.getNomeClientes());
-        cadastro.setString(2, S.getTelefoneClientes());
+        cadastro.setString(2, S.getTelefone());
         cadastro.execute();
         System.out.println(sqlQuery);
     }
@@ -51,7 +51,7 @@ public class ClienteDAO {
             Cliente cliente = new Cliente();
             cliente.setIdClientes(rs.getInt("IdClientes"));
             cliente.setNomeClientes(rs.getString("nomeClientes"));
-            cliente.setTelefoneClientes(rs.getString("telefoneClientes"));
+            cliente.setTelefone(rs.getString("telefoneClientes"));
             listaClientes.add(cliente);
             }
            return listaClientes;
@@ -91,7 +91,7 @@ public class ClienteDAO {
         bd.conectar();
         String query = "update clientes set nomeClientes = '" + 
                         B.getNomeClientes()+ "', telefoneClientes = '" +    
-                        B.getTelefoneClientes()+ "' where IdClientes = " + 
+                        B.getTelefone()+ "' where IdClientes = " + 
                         B.getIdClientes();
         PreparedStatement consulta = bd.getConexao().prepareStatement(query);
         try {

@@ -245,7 +245,7 @@ public class TelaClientes extends javax.swing.JInternalFrame {
         Cliente excluir = new Cliente();
 
         excluir.setNomeClientes(jtfNomeClientes.getText());
-        excluir.setTelefoneClientes(jtfNomeClientes.getText());
+        excluir.setTelefone(jtfNomeClientes.getText());
         excluir.setIdClientes(Integer.parseInt(jtfCodigoClientes.getText()));
 
         try {
@@ -271,7 +271,7 @@ public class TelaClientes extends javax.swing.JInternalFrame {
         Cliente cadastro = new Cliente();
 
         cadastro.setNomeClientes(jtfNomeClientes.getText());
-        cadastro.setTelefoneClientes(jtfTelefoneClientes.getText());
+        cadastro.setTelefone(jtfTelefoneClientes.getText());
 
         if (jtfNomeClientes.getText().equals("")) {
         try {

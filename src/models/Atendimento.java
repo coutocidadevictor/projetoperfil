@@ -2,11 +2,11 @@ package models;
 
 public class Atendimento {
 
-    int IdAtendimentos;
-    int idClientes;
-    int idServico;
-    int idColaboradores;
-    String dataAtendimentos;
+    private int IdAtendimentos;
+    private int idClientes;
+    private int idServico;
+    private int idColaboradores;
+    private String dataAtendimentos;
 
     public Atendimento() {
     }
