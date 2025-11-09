@@ -2,93 +2,125 @@ package dao;
 
 import db.Conexao;
 import models.Servico;
-import java.sql.SQLDataException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import models.Servico;
-import db.Conexao;
 import models.Atendimento;
-import tabela.Tabela;
-import view.TelaServicos;
-import java.sql.SQLDataException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AtendimentoDAO {
 
-    public void Cadastrar(Atendimento A) throws SQLException {
+    private Conexao conexao;
 
-        Conexao bd = new Conexao();
-        bd.conectar();
-
-        String sqlQuery = "insert into atendimentos(idClientes, idServico, idColaboradores, dataAtendimento) values (?, ?, ?, ?)";
-        PreparedStatement cadastro = bd.getConexao().prepareStatement(sqlQuery);
-
-        cadastro.setInt(1, A.getIdClientes());
-        cadastro.setInt(2, A.getIdServico());
-        cadastro.setInt(3, A.getIdColaboradores());
-        cadastro.setString(4, A.getDataAtendimentos());
-        cadastro.execute();
-        System.out.println(sqlQuery);
+    public AtendimentoDAO() {
+        this.conexao = Conexao.getInstance();
     }
 
-    public static ArrayList<Atendimento> listaAtendimentos() throws SQLException {
-        Conexao bd = new Conexao();
-        bd.conectar();
+    public void inserir(Atendimento A) throws SQLException {
+        // Cria a query
+        String sql = "INSERT INTO atendimentos(idClientes, idServico, idColaboradores, dataAtendimento) VALUES (?, ?, ?, ?)";
 
-        String query = "select * from atendimentos";
-        ArrayList<Atendimento> listaAtendimentos = new ArrayList<>();
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        PreparedStatement cadastro = bd.getConexao().prepareStatement(query);
-        ResultSet rs = cadastro.executeQuery();
+            // Substitui valores na query
+            ps.setInt(1, A.getIdClientes());
+            ps.setInt(2, A.getIdServico());
+            ps.setInt(3, A.getIdColaboradores());
+            ps.setString(4, A.getDataAtendimentos());
 
-        while (rs.next()) {
-
-            Atendimento atendimento = new Atendimento();
-            atendimento.setIdAtendimentos(rs.getInt("Idatendimentos"));
-            atendimento.setIdClientes(rs.getInt("IdClientes"));
-            atendimento.setIdServico(rs.getInt("IdServico"));
-            atendimento.setIdColaboradores(rs.getInt("IdColaboradores"));
-            atendimento.setDataAtendimentos(rs.getString("dataAtendimento"));
-
-            listaAtendimentos.add(atendimento);
+            // Executa a query
+            ps.executeUpdate();
         }
-        return listaAtendimentos;
     }
 
-    public void alterar(Servico B) throws SQLException {
-        Conexao bd = new Conexao();
-        bd.conectar();
-        String query = "update servicos set nome = '" + B.getNome() + "', valor = '" + B.getValor() + "' where IdServico = " + B.getIdServico();
-        PreparedStatement consulta = bd.getConexao().prepareStatement(query);
-        try {
-            consulta.executeUpdate(query);
-        } catch (SQLException e) {
-            System.out.print(query);
-            e.getMessage();
+    public List<Atendimento> listarTodos() throws SQLException {
+        // Cria a query
+        String sql = "SELECT * FROM atendimentos";
+        List<Atendimento> atendimentos = new ArrayList<>();
+
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql); 
+             ResultSet rs = ps.executeQuery()) {
+            
+            // Preenche a lista de resultados
+            while (rs.next()) {
+                Atendimento atendimento = new Atendimento();
+                atendimento.setIdAtendimentos(rs.getInt("Idatendimentos"));
+                atendimento.setIdClientes(rs.getInt("IdClientes"));
+                atendimento.setIdServico(rs.getInt("IdServico"));
+                atendimento.setIdColaboradores(rs.getInt("IdColaboradores"));
+                atendimento.setDataAtendimentos(rs.getString("dataAtendimento"));
+                atendimentos.add(atendimento);
+            }
         }
-
+        
+        // Retorna lista
+        return atendimentos;
     }
 
-    public void excluir(Servico B) throws SQLException {
-        Conexao bd = new Conexao();
-        bd.conectar();
-        String query = "delete servicos where id = " + B.getIdServico();
-        PreparedStatement consulta = bd.getConexao().
-                prepareStatement(query);
-        try {
-            consulta.executeUpdate(query);
-        } catch (SQLException e) {
-            System.out.print(query);
-            e.getMessage();
+    public void atualizar(Atendimento atendimento) throws SQLException {
+        // Cria a query
+        String sql = "UPDATE atendimentos SET idClientes = ?, idServico = ?, idColaboradores = ?, dataAtendimento = ? WHERE Idatendimentos = ?";
+            
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            ps.setInt(1, atendimento.getIdClientes());
+            ps.setInt(2, atendimento.getIdServico());
+            ps.setInt(3, atendimento.getIdColaboradores());
+            ps.setString(4, atendimento.getDataAtendimentos());
+            ps.setInt(5, atendimento.getIdAtendimentos());
+            
+            // Executa a query
+            ps.executeUpdate();
         }
-
     }
+
+    public void excluir(int idAtendimento) throws SQLException {
+        // Cria a query
+        String sql = "DELETE FROM atendimentos WHERE Idatendimentos = ?";
+        
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            ps.setInt(1, idAtendimento);
+            
+            // Executa a query
+            ps.executeUpdate();
+        }
+    }
+    
+    public Atendimento buscarPorId(int idAtendimento) throws SQLException {
+        // Cria a query
+        String sql = "SELECT * FROM atendimentos WHERE Idatendimentos = ?";
+        
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            stmt.setInt(1, idAtendimento);
+            
+            // Executa a query
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Atendimento atendimento = new Atendimento();
+                    atendimento.setIdAtendimentos(rs.getInt("Idatendimentos"));
+                    atendimento.setIdClientes(rs.getInt("IdClientes"));
+                    atendimento.setIdServico(rs.getInt("IdServico"));
+                    atendimento.setIdColaboradores(rs.getInt("IdColaboradores"));
+                    atendimento.setDataAtendimentos(rs.getString("dataAtendimento"));
+                    return atendimento;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
 
 }

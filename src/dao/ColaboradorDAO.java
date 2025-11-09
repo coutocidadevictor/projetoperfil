@@ -1,135 +1,110 @@
 package dao;
 
 import db.Conexao;
-import models.Servico;
-import java.sql.SQLDataException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import db.Conexao;
 import models.Colaborador;
-import tabela.Tabela;
-import view.TelaAtendimentos;
-import view.TelaColaboradores;
-import java.sql.SQLDataException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import java.sql.ResultSet;
-import java.util.Vector;
+import java.util.List;
 
 public class ColaboradorDAO {
+    private Conexao conexao;
 
-    Vector<Integer> nomeColaborador = new Vector<Integer>();
-    
-    
-    
-    public void Cadastrar(Colaborador S) throws SQLException {
-
-        Conexao bd = new Conexao();
-        bd.conectar();
-
-        String sqlQuery = "insert into colaboradores(nomeColaboradores, telefoneColaboradores) values (?, ?)";
-        PreparedStatement cadastro = bd.getConexao().prepareStatement(sqlQuery);
-
-        cadastro.setString(1, S.getNome());
-        cadastro.setString(2, S.getTelefone());
-        cadastro.execute();
-        System.out.println(sqlQuery);
+    public ColaboradorDAO() {
+        this.conexao = Conexao.getInstance();
     }
 
-    public static ArrayList<Colaborador> listaColaboradores() throws SQLException {
-        Conexao bd = new Conexao();
-        bd.conectar();
-
+    public void inserir(Colaborador colaborador) throws SQLException {
+        // Cria a query
+        String sql = "INSERT INTO colaboradores(nomeColaboradores, telefoneColaboradores) VALUES (?, ?)";
         
-        String[] colunas = new String[]{"IdColaboradores", "nomeColaboradores", "telefoneColaboradores"};
-        String query = "select * from colaboradores";
-        {
-            ArrayList<Colaborador> listaColaboradores;
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            ps.setString(1, colaborador.getNome());
+            ps.setString(2, colaborador.getTelefone());
+            
+            // Executa a query
+            ps.executeUpdate();
+        }
+    }
 
-            PreparedStatement cadastro = bd.getConexao().prepareStatement(query);
-            ResultSet rs = cadastro.executeQuery();
-            listaColaboradores = new ArrayList<>();
-
+    public List<Colaborador> listarTodos() throws SQLException {
+        // Cria a query
+        String sql = "SELECT * FROM colaboradores";
+        List<Colaborador> colaboradores = new ArrayList<>();
+        
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
             while (rs.next()) {
-            Colaborador colaborador = new Colaborador();
-            colaborador.setIdColaboradores(rs.getInt("IdColaboradores"));
-            colaborador.setNome(rs.getString("nomeColaboradores"));
-            colaborador.setTelefone(rs.getString("telefoneColaboradores"));
-            listaColaboradores.add(colaborador);
+                Colaborador colaborador = new Colaborador();
+                colaborador.setIdColaboradores(rs.getInt("IdColaboradores"));
+                colaborador.setNome(rs.getString("nomeColaboradores"));
+                colaborador.setTelefone(rs.getString("telefoneColaboradores"));
+                colaboradores.add(colaborador);
             }
-            return listaColaboradores;
         }
-
+        return colaboradores;
     }
 
-    
-        public static Tabela obterTabela() throws SQLException {
-        Conexao bd = new Conexao();
-        bd.conectar();
+    public void atualizar(Colaborador colaborador) throws SQLException {
+        // Cria a query
+        String sql = "UPDATE colaboradores SET nomeColaboradores = ?, telefoneColaboradores = ? WHERE IdColaboradores = ?";
+        
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            ps.setString(1, colaborador.getNome());
+            ps.setString(2, colaborador.getTelefone());
+            ps.setInt(3, colaborador.getIdColaboradores());
+            
+            // Executa a query
+            ps.executeUpdate();
+        }
+    }
 
-        ArrayList dados = new ArrayList<>();
-        String[] colunas = new String[]{"IdColaboradores", "nomeColaboradores", "telefoneColaboradores"};
-        String query = "select * from colaboradores";
-        {
+    public void excluir(int idColaborador) throws SQLException {
+        // Cria a query
+        String sql = "DELETE FROM colaboradores WHERE IdColaboradores = ?";
+        
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            ps.setInt(1, idColaborador);
+            
+            // Executa a query
+            ps.executeUpdate();
+        }
+    }
 
-            PreparedStatement cadastro = bd.getConexao().prepareStatement(query);
-            ResultSet rs = cadastro.executeQuery();
-          
-
-            while (rs.next()) {
-                dados.add(new Object[]{
-                    rs.getString("IdColaboradores"),
-                    rs.getString("nomeColaboradores"),
-                    rs.getString("telefoneColaboradores")});
+    public Colaborador buscarPorId(int idColaborador) throws SQLException {
+        // Cria a query
+        String sql = "SELECT * FROM colaboradores WHERE IdColaboradores = ?";
+        
+        try (Connection conn = conexao.getConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            // Substitui valores na query
+            ps.setInt(1, idColaborador);
+            
+            // Executa a query
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Colaborador colaborador = new Colaborador();
+                    colaborador.setIdColaboradores(rs.getInt("IdColaboradores"));
+                    colaborador.setNome(rs.getString("nomeColaboradores"));
+                    colaborador.setTelefone(rs.getString("telefoneColaboradores"));
+                    return colaborador;
+                }
             }
-            Tabela modelo = new Tabela(dados, colunas);
-            return modelo;
         }
-
+        return null;
     }
-        
-        
-    public void alterar(Colaborador B) throws SQLException {
-        Conexao bd = new Conexao();
-        bd.conectar();
-        String query = "update colaboradores set nomeColaboradores = '" + 
-                B.getNome()+ "', telefoneColaboradores = '" + 
-                B.getTelefone()+ "' where IdColaboradores = " + 
-                B.getIdColaboradores();
-        PreparedStatement consulta = bd.getConexao().prepareStatement(query);
-        try {
-            consulta.executeUpdate(query);
-        } catch (SQLException e) {
-            System.out.print(query);
-            e.getMessage();
-        }
-
-    }
-
-    public void excluir(Colaborador B) throws SQLException {
-        System.out.println(B.getIdColaboradores());
-        Conexao bd = new Conexao();
-        bd.conectar();
-        String query = "delete from colaboradores where IdColaboradores = ?";
-        PreparedStatement consulta = bd.getConexao().
-                prepareStatement(query);
-                
-        consulta.setInt(1, B.getIdColaboradores());
-        
-        try {
-            consulta.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(query);
-            e.printStackTrace();
-            e.getMessage();
-        }
-
-    }
-    
-
 }
