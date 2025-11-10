@@ -2,32 +2,32 @@ package models;
 
 public class Cliente {
 
-    private int IdClientes;
+    private int IdCliente;
     private String nome;
     private String telefone;
 
     public Cliente() {
     }
 
-    public Cliente(int IdClientes, String nomeClientes, String telefoneClientes) {
-        this.IdClientes = IdClientes;
+    public Cliente(int IdCliente, String nomeClientes, String telefoneClientes) {
+        this.IdCliente = IdCliente;
         this.nome = nomeClientes;
         this.telefone = telefoneClientes;
     }
 
-    public int getIdClientes() {
-        return IdClientes;
+    public int getIdCliente() {
+        return IdCliente;
     }
 
-    public void setIdClientes(int IdClientes) {
-        this.IdClientes = IdClientes;
+    public void setIdCliente(int IdCliente) {
+        this.IdCliente = IdCliente;
     }
 
-    public String getNomeClientes() {
+    public String getNome() {
         return nome;
     }
 
-    public void setNomeClientes(String nome) {
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
@@ -35,8 +35,8 @@ public class Cliente {
         return telefone;
     }
 
-    public void setTelefone(String clientes) {
-        this.telefone = clientes;
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
     }
 
     public String toString() {

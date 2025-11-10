@@ -4,44 +4,36 @@
  */
 package view;
 
+import controller.ColaboradorController;
 import models.Colaborador;
-import models.Servico;
-import dao.ColaboradorDAO;
-import dao.ServicoDAO;
-import tabela.Tabela;
-import javax.swing.JOptionPane;
+import util.Tabela;
 import java.sql.SQLException;
-import javax.swing.JOptionPane;
-import java.sql.SQLException;
+import java.util.List;
 import javax.swing.JOptionPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.TabelaUtils;
 
-/**
- *
- * @author Victor
- */
 public class TelaColaboradores extends javax.swing.JInternalFrame {
 
-    /**
-     * Creates new form Servicos
-     */
+    private ColaboradorController colaboradorController;
+
     public TelaColaboradores() throws SQLException {
         initComponents();
+        colaboradorController = new ColaboradorController();
         atualizarTabela();
-            
-            
-            
     }
-    
-    private void atualizarTabela() throws SQLException{
-        Tabela modelo = ColaboradorDAO.obterTabela();
-        
+
+    private void atualizarTabela() throws SQLException {
+        List<Colaborador> colaboradores = colaboradorController.listarTodos();
+        Tabela modelo = TabelaUtils.criarTabelaColaboradores(colaboradores);
+
         tabelaPrincipalColaboradores.setModel(modelo);
         tabelaPrincipalColaboradores.getColumnModel().getColumn(0).setPreferredWidth(1);
         tabelaPrincipalColaboradores.getColumnModel().getColumn(1).setPreferredWidth(200);
         tabelaPrincipalColaboradores.getColumnModel().getColumn(2).setPreferredWidth(200);
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -118,9 +110,9 @@ public class TelaColaboradores extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel2.setText("Nome Colaborador");
+        jLabel2.setText("Nome");
 
-        jLabel3.setText("Telefone Colaborador");
+        jLabel3.setText("Telefone");
 
         jbLimpar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icones/8686254_ic_fluent_text_clear_formatting_icon.png"))); // NOI18N
         jbLimpar.setToolTipText("Limpar");
@@ -156,14 +148,6 @@ public class TelaColaboradores extends javax.swing.JInternalFrame {
         jbEditar.setToolTipText("Editar");
         jbEditar.setBorderPainted(false);
         jbEditar.setContentAreaFilled(false);
-        jbEditar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jbEditarMouseClicked(evt);
-            }
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                jbEditarMouseReleased(evt);
-            }
-        });
         jbEditar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jbEditarActionPerformed(evt);
@@ -240,78 +224,54 @@ public class TelaColaboradores extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jtfCodigoColaboradoresActionPerformed
 
     private void jbDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDeletarActionPerformed
-        ColaboradorDAO tipoColaboradores = new ColaboradorDAO();
-        //esse objeto pega os métodos gets e sets
-        Colaborador excluir = new Colaborador();
-        
-               //obter a partir da tabela qual o objeto selecionado 
-        
-        int linha = tabelaPrincipalColaboradores.getSelectedRow();
-        if(linha < 0 )
+        if (jtfCodigoColaboradores.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecione um colaborador para excluir",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
-        
-        int id = Integer.parseInt(tabelaPrincipalColaboradores.getValueAt(linha, 0).toString());
-        String nome = (String) tabelaPrincipalColaboradores.getValueAt(linha, 1);
-        String telefone = (String) tabelaPrincipalColaboradores.getValueAt(linha, 2);
-        
-        excluir.setNome(nome);
-        excluir.setTelefone(telefone);
-        excluir.setIdColaboradores(id);
-
-        try {
-            tipoColaboradores.excluir(excluir);
-            atualizarTabela();
-        } catch (SQLException ex) {
-            Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        limpaCampos();
+        try {
+            colaboradorController.excluir(jtfCodigoColaboradores.getText());
+            JOptionPane.showMessageDialog(this, "Colaborador excluído com sucesso!",
+                    "Exclusão", JOptionPane.INFORMATION_MESSAGE);
 
+            limpaCampos();
+            atualizarTabela();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao excluir colaborador", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_jbDeletarActionPerformed
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
+        try {
+            boolean sucesso = colaboradorController.salvar(
+                    jtfNomeColaboradores.getText(),
+                    jtfTelefoneColaboradores.getText(),
+                    jtfCodigoColaboradores.getText()
+            );
 
-        //esse objeto referencia a classe onde irá salvar
-        ColaboradorDAO cadColaboradores = new ColaboradorDAO();
-        //esse objeto pega os métodos gets e sets
-        Colaborador cadastro = new Colaborador();
+            if (sucesso) {
+                String mensagem = jtfCodigoColaboradores.getText().isEmpty()
+                        ? "Colaborador cadastrado com sucesso!" : "Colaborador atualizado com sucesso!";
 
-        cadastro.setNome(jtfNomeColaboradores.getText());
-        cadastro.setTelefone(jtfTelefoneColaboradores.getText());
-        
-        if (jtfCodigoColaboradores.getText().equals("")) {
+                JOptionPane.showMessageDialog(this, mensagem, "Cadastro de Colaboradores",
+                        JOptionPane.INFORMATION_MESSAGE);
 
-            try {
-                cadColaboradores.Cadastrar(cadastro);
+                limpaCampos();
                 atualizarTabela();
-            } catch (SQLException ex) {
-                Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
             }
-            JOptionPane.showMessageDialog(this, "Colaborador cadastrado com sucesso!",
-                    "Cadastro de Colaborador", //Cria caixa de texto após executada a ação.
-                    JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
-        }else{
-            cadastro.setIdColaboradores(jtfCodigoColaboradores.getText());
-            try {
-                cadColaboradores.alterar(cadastro);
-                atualizarTabela();
-            } catch (SQLException ex) {
-                Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            JOptionPane.showMessageDialog(this, "Colaborador atualizado com sucesso!",
-                    "Atualização de Colaborador", //Cria caixa de texto após executada a ação.
-                    JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
+
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Erro de Validação",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao salvar colaborador", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
-
-       
-
-        
-        limpaCampos();
-        
-        
-        
-
-
     }//GEN-LAST:event_jbSalvarActionPerformed
 
     private void jbLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLimparActionPerformed
@@ -319,42 +279,32 @@ public class TelaColaboradores extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jbLimparActionPerformed
 
     private void tabelaPrincipalColaboradoresMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaPrincipalColaboradoresMouseClicked
-        
+        carregarColaboradorDaTabela();
     }//GEN-LAST:event_tabelaPrincipalColaboradoresMouseClicked
 
     private void jbEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbEditarActionPerformed
-
-
+        carregarColaboradorDaTabela();
     }//GEN-LAST:event_jbEditarActionPerformed
-
-    private void jbEditarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbEditarMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jbEditarMouseClicked
-
-    private void jbEditarMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbEditarMouseReleased
-        //obter a partir da tabela qual o objeto selecionado 
-        
+    
+    private void carregarColaboradorDaTabela() {
         int linha = tabelaPrincipalColaboradores.getSelectedRow();
-        if(linha < 0 )
-            return;
-        
-        String id = (String) tabelaPrincipalColaboradores.getValueAt(linha, 0);
-        String nome = (String) tabelaPrincipalColaboradores.getValueAt(linha, 1);
-        String telefone = (String) tabelaPrincipalColaboradores.getValueAt(linha, 2);
-        
-        
+        if (linha < 0) return;
+
+        String id = tabelaPrincipalColaboradores.getValueAt(linha, 0).toString();
+        String nome = tabelaPrincipalColaboradores.getValueAt(linha, 1).toString();
+        String telefone = tabelaPrincipalColaboradores.getValueAt(linha, 2).toString();
+
         jtfCodigoColaboradores.setText(id);
         jtfNomeColaboradores.setText(nome);
         jtfTelefoneColaboradores.setText(telefone);
-    }//GEN-LAST:event_jbEditarMouseReleased
-
+    }
+    
     public void limpaCampos() {
         jtfCodigoColaboradores.setText("");
         jtfNomeColaboradores.setText("");
         jtfTelefoneColaboradores.setText("");
 
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog jDialog1;

@@ -4,16 +4,15 @@
  */
 package view;
 
+import controller.AtendimentoController;
 import models.Atendimento;
 import models.Cliente;
 import models.Colaborador;
 import models.Servico;
-import dao.AtendimentoDAO;
-import dao.ClienteDAO;
-import dao.ColaboradorDAO;
 import dao.ServicoDAO;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,82 +26,93 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TelaAtendimentos extends javax.swing.JInternalFrame {
 
-    ArrayList<Servico> listaServicos;
-    ArrayList<Cliente> listaClientes;
-    ArrayList<Colaborador> listaColaboradores;
-    ArrayList<Atendimento> listaAtendimentos;
+    private AtendimentoController atendimentoController;
 
-    DefaultComboBoxModel<Servico> modelServicos;
-    DefaultComboBoxModel<Cliente> modelClientes;
-    DefaultComboBoxModel<Colaborador> modelColaboradores;
-
-    DefaultTableModel modelAtendimentos;
-
-    /**
-     * Creates new form Servicos
-     */
     public TelaAtendimentos() throws SQLException {
-        
-        listaServicos = ServicoDAO.listaServicos();
-        listaClientes = ClienteDAO.listaClientes();
-        listaColaboradores = ColaboradorDAO.listaColaboradores();
-        
-        modelServicos = new DefaultComboBoxModel<>();
-        for (Servico servico : listaServicos) {
+        initComponents();
+        atendimentoController = new AtendimentoController();
+        carregarCombos();
+        atualizarTabela();
+    }
+
+    private void carregarCombos() throws SQLException {
+        // Carrega serviços
+        List<Servico> servicos = atendimentoController.listarServicos();
+        DefaultComboBoxModel<Servico> modelServicos = new DefaultComboBoxModel<>();
+        for (Servico servico : servicos) {
             modelServicos.addElement(servico);
         }
-        modelClientes = new DefaultComboBoxModel<>();
-        for (Cliente clientes : listaClientes) {
-            modelClientes.addElement(clientes);
+        cbxServico.setModel(modelServicos);
+
+        // Carrega clientes
+        List<Cliente> clientes = atendimentoController.listarClientes();
+        DefaultComboBoxModel<Cliente> modelClientes = new DefaultComboBoxModel<>();
+        for (Cliente cliente : clientes) {
+            modelClientes.addElement(cliente);
         }
-        modelColaboradores = new DefaultComboBoxModel<>();
-        for (Colaborador colaboradores : listaColaboradores) {
-            modelColaboradores.addElement(colaboradores);
+        cbxCliente.setModel(modelClientes);
+
+        // Carrega colaboradores
+        List<Colaborador> colaboradores = atendimentoController.listarColaboradores();
+        DefaultComboBoxModel<Colaborador> modelColaboradores = new DefaultComboBoxModel<>();
+        for (Colaborador colaborador : colaboradores) {
+            modelColaboradores.addElement(colaborador);
         }
+        cbxColaborador.setModel(modelColaboradores);
+    }
 
-        listaAtendimentos = AtendimentoDAO.listaAtendimentos();
+    private void atualizarTabela() throws SQLException {
+        List<Atendimento> atendimentos = atendimentoController.listarTodos();
 
-        modelAtendimentos = new DefaultTableModel(new String[]{
-            "Código", "Nome Serviço", "Nome Cliente", "Nome Colaborador", "Data Atendimento"
-        }, 0);
+        DefaultTableModel model = new DefaultTableModel(
+                new String[]{"Código", "Serviço", "Cliente", "Colaborador", "Data"}, 0
+        );
 
-        for (Atendimento atendimento : listaAtendimentos) {
-            String nomeServico = "";
-            String nomeCliente = "";
-            String nomeColaborador = "";
-            for (Servico servico: listaServicos){
-                if (servico.getIdServico() == atendimento.getIdServico()){
-                    nomeServico = servico.getNome();
-                    break;
-                }
-            }
-            
-            for (Cliente cliente: listaClientes){
-                if (cliente.getIdClientes() == atendimento.getIdClientes()){
-                    nomeCliente = cliente.getNomeClientes();
-                    break;
-                }
-            }
-            
-            for (Colaborador colaborador: listaColaboradores){
-                if (colaborador.getIdColaboradores()== atendimento.getIdColaboradores()){
-                    nomeColaborador = colaborador.getNome();
-                    break;
-                }
-            }
-            
-            Object[] linha = {
+        for (Atendimento atendimento : atendimentos) {
+            String nomeServico = obterNomeServico(atendimento.getIdServico());
+            String nomeCliente = obterNomeCliente(atendimento.getIdClientes());
+            String nomeColaborador = obterNomeColaborador(atendimento.getIdColaboradores());
+
+            model.addRow(new Object[]{
                 atendimento.getIdAtendimentos(),
                 nomeServico,
                 nomeCliente,
                 nomeColaborador,
                 atendimento.getDataAtendimentos()
-            }; 
-            modelAtendimentos.addRow(linha);
+            });
         }
 
-        initComponents();
+        tabelaPrincipalAtendimentos.setModel(model);
+    }
 
+    private String obterNomeServico(int idServico) throws SQLException {
+        List<Servico> servicos = atendimentoController.listarServicos();
+        for (Servico servico : servicos) {
+            if (servico.getIdServico() == idServico) {
+                return servico.getNome();
+            }
+        }
+        return "";
+    }
+
+    private String obterNomeCliente(int idCliente) throws SQLException {
+        List<Cliente> clientes = atendimentoController.listarClientes();
+        for (Cliente cliente : clientes) {
+            if (cliente.getIdCliente() == idCliente) {
+                return cliente.getNome();
+            }
+        }
+        return "";
+    }
+
+    private String obterNomeColaborador(int idColaborador) throws SQLException {
+        List<Colaborador> colaboradores = atendimentoController.listarColaboradores();
+        for (Colaborador colaborador : colaboradores) {
+            if (colaborador.getIdColaboradores() == idColaborador) {
+                return colaborador.getNome();
+            }
+        }
+        return "";
     }
 
     /**
@@ -130,7 +140,7 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
         jLabel4 = new javax.swing.JLabel();
         cbxColaborador = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
-        tfDataAtendimento = new javax.swing.JTextField();
+        spnDataAtendimento = new javax.swing.JSpinner();
 
         javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
         jDialog1.getContentPane().setLayout(jDialog1Layout);
@@ -147,7 +157,6 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
         setTitle("Cadastro de Atendimentos");
 
         tabelaPrincipalAtendimentos.setBackground(new java.awt.Color(255, 204, 255));
-        tabelaPrincipalAtendimentos.setModel(modelAtendimentos);
         tabelaPrincipalAtendimentos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tabelaPrincipalAtendimentosMouseClicked(evt);
@@ -167,7 +176,7 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel2.setText("Nome Serviço");
+        jLabel2.setText("Serviço");
 
         jLabel3.setText("Cliente");
 
@@ -211,25 +220,12 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
             }
         });
 
-        cbxServico.setModel((ComboBoxModel<models.Servico>) modelServicos);
-        cbxServico.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbxServicoActionPerformed(evt);
-            }
-        });
-
-        cbxCliente.setModel((ComboBoxModel<models.Cliente>) modelClientes);
-
         jLabel4.setText("Data Atendimento");
 
-        cbxColaborador.setModel((ComboBoxModel<models.Colaborador>) modelColaboradores);
-        cbxColaborador.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbxColaboradorActionPerformed(evt);
-            }
-        });
-
         jLabel5.setText("Colaborador");
+
+        spnDataAtendimento.setModel(new javax.swing.SpinnerDateModel(new java.util.Date(), null, null, java.util.Calendar.WEEK_OF_MONTH));
+        spnDataAtendimento.setName(""); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -244,18 +240,14 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tfDataAtendimento))
+                                .addComponent(spnDataAtendimento))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel2)
-                                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
-                                        .addGap(18, 18, 18))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(jLabel5)
-                                        .addGap(6, 6, 6)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel2))
+                                .addGap(6, 6, 6)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jtfCodigoAtendimentos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(cbxServico, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -307,7 +299,7 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(tfDataAtendimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(spnDataAtendimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
                 .addContainerGap())
@@ -321,46 +313,71 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jtfCodigoAtendimentosActionPerformed
 
     private void jbDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDeletarActionPerformed
-        ServicoDAO tipoPagamento = new ServicoDAO();
-        //esse objeto pega os métodos gets e sets
-        Servico excluir = new Servico();
-
-        excluir.setIdServico(Integer.parseInt(jtfCodigoAtendimentos.getText()));
-
-        try {
-            tipoPagamento.excluir(excluir);
-        } catch (SQLException ex) {
-            Logger.getLogger(TelaAtendimentos.class.getName()).log(Level.SEVERE, null, ex);
+        if (jtfCodigoAtendimentos.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecione um atendimento para excluir",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
         }
 
-        limpaCampos();
-
         try {
-            ServicoDAO.listaServicos();
+            atendimentoController.excluir(jtfCodigoAtendimentos.getText());
+            JOptionPane.showMessageDialog(this, "Atendimento excluído com sucesso!",
+                    "Exclusão", JOptionPane.INFORMATION_MESSAGE);
+
+            limpaCampos();
+            atualizarTabela();
+
         } catch (SQLException ex) {
             Logger.getLogger(TelaAtendimentos.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao excluir atendimento", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_jbDeletarActionPerformed
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
-
-        //esse objeto referencia a classe onde irá salvar
-        ServicoDAO cadServicos = new ServicoDAO();
-        //esse objeto pega os métodos gets e sets
-        Servico cadastro = new Servico();
-
         try {
-            cadServicos.Cadastrar(cadastro);
+            // Obtém os IDs selecionados nos combos
+            Servico servicoSelecionado = (Servico) cbxServico.getSelectedItem();
+            Cliente clienteSelecionado = (Cliente) cbxCliente.getSelectedItem();
+            Colaborador colaboradorSelecionado = (Colaborador) cbxColaborador.getSelectedItem();
+
+            if (servicoSelecionado == null || clienteSelecionado == null || colaboradorSelecionado == null) {
+                JOptionPane.showMessageDialog(this, "Todos os campos são obrigatórios",
+                        "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // ✅ Obtém a data do SPINNER (NOVO)
+            java.util.Date dataSelecionada = (java.util.Date) spnDataAtendimento.getValue();
+            String dataFormatada = new java.text.SimpleDateFormat("yyyy-MM-dd").format(dataSelecionada);
+
+            boolean sucesso = atendimentoController.salvar(
+                    String.valueOf(servicoSelecionado.getIdServico()),
+                    String.valueOf(clienteSelecionado.getIdCliente()),
+                    String.valueOf(colaboradorSelecionado.getIdColaboradores()),
+                    dataFormatada, // ✅ Data do spinner formatada
+                    jtfCodigoAtendimentos.getText()
+            );
+
+            if (sucesso) {
+                String mensagem = jtfCodigoAtendimentos.getText().isEmpty()
+                        ? "Atendimento cadastrado com sucesso!" : "Atendimento atualizado com sucesso!";
+
+                JOptionPane.showMessageDialog(this, mensagem, "Cadastro de Atendimentos",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                limpaCampos();
+                atualizarTabela();
+            }
+
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Erro de Validação",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (SQLException ex) {
             Logger.getLogger(TelaAtendimentos.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao salvar atendimento", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
-
-        JOptionPane.showMessageDialog(this, "Serviço cadastrado com sucesso!",
-                "Cadastro de Serviço", //Cria caixa de texto após executada a ação.
-                JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
-        limpaCampos();
-
-
     }//GEN-LAST:event_jbSalvarActionPerformed
 
     private void jbLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLimparActionPerformed
@@ -368,44 +385,79 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jbLimparActionPerformed
 
     private void tabelaPrincipalAtendimentosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaPrincipalAtendimentosMouseClicked
-
+        carregarAtendimentoDaTabela();
     }//GEN-LAST:event_tabelaPrincipalAtendimentosMouseClicked
 
     private void jbEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbEditarActionPerformed
-        ServicoDAO servico = new ServicoDAO();
-        Servico editar = new Servico();
-
-        editar.setIdServico(Integer.parseInt(jtfCodigoAtendimentos.getText()));
-
-        try {
-            servico.alterar(editar);
-        } catch (SQLException ex) {
-            Logger.getLogger(TelaAtendimentos.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        limpaCampos();
-
-        try {
-            ServicoDAO.listaServicos();
-        } catch (SQLException ex) {
-            Logger.getLogger(TelaAtendimentos.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-
+        carregarAtendimentoDaTabela();
     }//GEN-LAST:event_jbEditarActionPerformed
 
-    private void cbxServicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxServicoActionPerformed
+    private void carregarAtendimentoDaTabela() {
+        int linha = tabelaPrincipalAtendimentos.getSelectedRow();
+        if (linha < 0) {
+            return;
+        }
 
+        try {
+            String id = tabelaPrincipalAtendimentos.getValueAt(linha, 0).toString();
+            Atendimento atendimento = atendimentoController.buscarPorId(id);
 
-    }//GEN-LAST:event_cbxServicoActionPerformed
+            if (atendimento != null) {
+                jtfCodigoAtendimentos.setText(String.valueOf(atendimento.getIdAtendimentos()));
 
-    private void cbxColaboradorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxColaboradorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbxColaboradorActionPerformed
+                // ✅ Define a data no SPINNER (NOVO)
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    java.util.Date data = sdf.parse(atendimento.getDataAtendimentos());
+                    spnDataAtendimento.setValue(data);
+                } catch (java.text.ParseException e) {
+                    spnDataAtendimento.setValue(new java.util.Date()); // data atual como fallback
+                }
+
+                // Seleciona os itens nos combos baseado nos IDs
+                selecionarComboPorId(cbxServico, atendimento.getIdServico());
+                selecionarComboPorId(cbxCliente, atendimento.getIdClientes());
+                selecionarComboPorId(cbxColaborador, atendimento.getIdColaboradores());
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(TelaAtendimentos.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao carregar atendimento", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void selecionarComboPorId(javax.swing.JComboBox comboBox, int id) {
+        for (int i = 0; i < comboBox.getItemCount(); i++) {
+            Object item = comboBox.getItemAt(i);
+            if (item instanceof Servico && ((Servico) item).getIdServico() == id) {
+                comboBox.setSelectedIndex(i);
+                return;
+            }
+            if (item instanceof Cliente && ((Cliente) item).getIdCliente() == id) {
+                comboBox.setSelectedIndex(i);
+                return;
+            }
+            if (item instanceof Colaborador && ((Colaborador) item).getIdColaboradores() == id) {
+                comboBox.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
 
     public void limpaCampos() {
         jtfCodigoAtendimentos.setText("");
-
+        spnDataAtendimento.setValue(new java.util.Date()); // ✅ Define data atual
+        // Opcional: resetar combos para primeira posição
+        if (cbxServico.getItemCount() > 0) {
+            cbxServico.setSelectedIndex(0);
+        }
+        if (cbxCliente.getItemCount() > 0) {
+            cbxCliente.setSelectedIndex(0);
+        }
+        if (cbxColaborador.getItemCount() > 0) {
+            cbxColaborador.setSelectedIndex(0);
+        }
     }
 
 
@@ -425,7 +477,7 @@ public class TelaAtendimentos extends javax.swing.JInternalFrame {
     private javax.swing.JButton jbLimpar;
     private javax.swing.JButton jbSalvar;
     public static javax.swing.JTextField jtfCodigoAtendimentos;
+    private javax.swing.JSpinner spnDataAtendimento;
     public static javax.swing.JTable tabelaPrincipalAtendimentos;
-    private javax.swing.JTextField tfDataAtendimento;
     // End of variables declaration//GEN-END:variables
 }

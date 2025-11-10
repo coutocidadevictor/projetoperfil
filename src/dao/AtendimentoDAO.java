@@ -20,7 +20,7 @@ public class AtendimentoDAO {
 
     public void inserir(Atendimento A) throws SQLException {
         // Cria a query
-        String sql = "INSERT INTO atendimentos(idClientes, idServico, idColaboradores, dataAtendimento) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO atendimentos(idCliente, idServico, idColaborador, dataAtendimento) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -48,10 +48,10 @@ public class AtendimentoDAO {
             // Preenche a lista de resultados
             while (rs.next()) {
                 Atendimento atendimento = new Atendimento();
-                atendimento.setIdAtendimentos(rs.getInt("Idatendimentos"));
-                atendimento.setIdClientes(rs.getInt("IdClientes"));
+                atendimento.setIdAtendimentos(rs.getInt("IdAtendimento"));
+                atendimento.setIdClientes(rs.getInt("IdCliente"));
                 atendimento.setIdServico(rs.getInt("IdServico"));
-                atendimento.setIdColaboradores(rs.getInt("IdColaboradores"));
+                atendimento.setIdColaboradores(rs.getInt("IdColaborador"));
                 atendimento.setDataAtendimentos(rs.getString("dataAtendimento"));
                 atendimentos.add(atendimento);
             }
@@ -63,7 +63,7 @@ public class AtendimentoDAO {
 
     public void atualizar(Atendimento atendimento) throws SQLException {
         // Cria a query
-        String sql = "UPDATE atendimentos SET idClientes = ?, idServico = ?, idColaboradores = ?, dataAtendimento = ? WHERE Idatendimentos = ?";
+        String sql = "UPDATE atendimentos SET idCliente = ?, idServico = ?, idColaborador = ?, dataAtendimento = ? WHERE IdAtendimento = ?";
             
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -82,7 +82,7 @@ public class AtendimentoDAO {
 
     public void excluir(int idAtendimento) throws SQLException {
         // Cria a query
-        String sql = "DELETE FROM atendimentos WHERE Idatendimentos = ?";
+        String sql = "DELETE FROM atendimentos WHERE IdAtendimento = ?";
         
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -97,7 +97,7 @@ public class AtendimentoDAO {
     
     public Atendimento buscarPorId(int idAtendimento) throws SQLException {
         // Cria a query
-        String sql = "SELECT * FROM atendimentos WHERE Idatendimentos = ?";
+        String sql = "SELECT * FROM atendimentos WHERE IdAtendimento = ?";
         
         try (Connection conn = conexao.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -109,10 +109,10 @@ public class AtendimentoDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Atendimento atendimento = new Atendimento();
-                    atendimento.setIdAtendimentos(rs.getInt("Idatendimentos"));
-                    atendimento.setIdClientes(rs.getInt("IdClientes"));
+                    atendimento.setIdAtendimentos(rs.getInt("IdAtendimento"));
+                    atendimento.setIdClientes(rs.getInt("IdCliente"));
                     atendimento.setIdServico(rs.getInt("IdServico"));
-                    atendimento.setIdColaboradores(rs.getInt("IdColaboradores"));
+                    atendimento.setIdColaboradores(rs.getInt("IdColaborador"));
                     atendimento.setDataAtendimentos(rs.getString("dataAtendimento"));
                     return atendimento;
                 }

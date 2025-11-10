@@ -4,20 +4,16 @@
  */
 package view;
 
+import controller.ClienteController;
 import models.Cliente;
-import models.Servico;
 import dao.ClienteDAO;
-import dao.ColaboradorDAO;
-import dao.ServicoDAO;
-import tabela.Tabela;
-import static view.TelaColaboradores.tabelaPrincipalColaboradores;
-import javax.swing.JOptionPane;
+import util.Tabela;
 import java.sql.SQLException;
-import javax.swing.JOptionPane;
-import java.sql.SQLException;
+import java.util.List;
 import javax.swing.JOptionPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.TabelaUtils;
 
 /**
  *
@@ -25,31 +21,30 @@ import java.util.logging.Logger;
  */
 public class TelaClientes extends javax.swing.JInternalFrame {
 
+    ClienteController clienteController;
+
     /**
      * Creates new form Servicos
      */
     public TelaClientes() throws SQLException {
-        
-        
         initComponents();
-        Tabela modelo = ClienteDAO.obterTabela();
-        
-        tabelaPrincipalClientes.setModel(modelo);
-        tabelaPrincipalClientes.getColumnModel().getColumn(0).setPreferredWidth(1);
-        tabelaPrincipalClientes.getColumnModel().getColumn(1).setPreferredWidth(200);
-        tabelaPrincipalClientes.getColumnModel().getColumn(2).setPreferredWidth(200);
-            
-    
+        clienteController = new ClienteController();
+        atualizarTabela();
     }
 
-        private void atualizarTabela() throws SQLException{
-        Tabela modelo = ClienteDAO.obterTabela();
-        
+    private void atualizarTabela() throws SQLException {
+        // Obtem lista de clientes
+        List<Cliente> clientes = clienteController.listarTodos();
+
+        // Popula tabela
+        Tabela modelo = TabelaUtils.criarTabelaClientes(clientes);
+
         tabelaPrincipalClientes.setModel(modelo);
         tabelaPrincipalClientes.getColumnModel().getColumn(0).setPreferredWidth(1);
         tabelaPrincipalClientes.getColumnModel().getColumn(1).setPreferredWidth(200);
         tabelaPrincipalClientes.getColumnModel().getColumn(2).setPreferredWidth(200);
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -126,7 +121,8 @@ public class TelaClientes extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel2.setText("Nome Cliente");
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel2.setText("Nome");
 
         jLabel3.setText("Telefone");
 
@@ -180,9 +176,9 @@ public class TelaClientes extends javax.swing.JInternalFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
                             .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jtfCodigoClientes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -240,64 +236,54 @@ public class TelaClientes extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jtfCodigoClientesActionPerformed
 
     private void jbDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDeletarActionPerformed
-        ClienteDAO tipoPagamento = new ClienteDAO();
-        //esse objeto pega os métodos gets e sets
-        Cliente excluir = new Cliente();
-
-        excluir.setNomeClientes(jtfNomeClientes.getText());
-        excluir.setTelefone(jtfNomeClientes.getText());
-        excluir.setIdClientes(Integer.parseInt(jtfCodigoClientes.getText()));
-
-        try {
-            tipoPagamento.excluir(excluir);
-        } catch (SQLException ex) {
-            Logger.getLogger(TelaClientes.class.getName()).log(Level.SEVERE, null, ex);
+        if (jtfCodigoClientes.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecione um cliente para excluir",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
         }
 
-        limpaCampos();
-
         try {
-            ClienteDAO.listaClientes();
+            clienteController.excluir(jtfCodigoClientes.getText());
+            JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso!",
+                    "Exclusão", JOptionPane.INFORMATION_MESSAGE);
+
+            limpaCampos();
+            atualizarTabela();
+
         } catch (SQLException ex) {
             Logger.getLogger(TelaClientes.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao excluir cliente", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_jbDeletarActionPerformed
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
-
-        //esse objeto referencia a classe onde irá salvar
-        ClienteDAO cadClientes = new ClienteDAO();
-        //esse objeto pega os métodos gets e sets
-        Cliente cadastro = new Cliente();
-
-        cadastro.setNomeClientes(jtfNomeClientes.getText());
-        cadastro.setTelefone(jtfTelefoneClientes.getText());
-
-        if (jtfNomeClientes.getText().equals("")) {
         try {
-            cadClientes.Cadastrar(cadastro);
+            boolean sucesso = clienteController.salvar(
+                    jtfNomeClientes.getText(),
+                    jtfTelefoneClientes.getText(),
+                    jtfCodigoClientes.getText()
+            );
+
+            if (sucesso) {
+                String mensagem = jtfCodigoClientes.getText().isEmpty()
+                        ? "Cliente cadastrado com sucesso!" : "Cliente atualizado com sucesso!";
+
+                JOptionPane.showMessageDialog(this, mensagem, "Cadastro de Clientes",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                limpaCampos();
+                atualizarTabela();
+            }
+
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Erro de Validação",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (SQLException ex) {
             Logger.getLogger(TelaClientes.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao salvar cliente", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
-
-        JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!",
-                "Cadastro de Clientes", //Cria caixa de texto após executada a ação.
-                JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
-        limpaCampos();
-        
-        }else{
-             cadastro.setIdClientes(Integer.parseInt(jtfCodigoClientes.getText()));
-            try {
-                cadClientes.alterar(cadastro);
-                atualizarTabela();
-            } catch (SQLException ex) {
-                Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            JOptionPane.showMessageDialog(this, "Colaborador atualizado com sucesso!",
-                    "Atualização de Colaborador", //Cria caixa de texto após executada a ação.
-                    JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
-        }
-
     }//GEN-LAST:event_jbSalvarActionPerformed
 
     private void jbLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLimparActionPerformed
@@ -305,26 +291,27 @@ public class TelaClientes extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jbLimparActionPerformed
 
     private void tabelaPrincipalClientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaPrincipalClientesMouseClicked
-        ClienteDAO buscaPressionando = new ClienteDAO();
-        buscaPressionando.clicarTabela();
+        carregarClienteDaTabela();
     }//GEN-LAST:event_tabelaPrincipalClientesMouseClicked
 
     private void jbEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbEditarActionPerformed
-        
+        carregarClienteDaTabela();
+    }//GEN-LAST:event_jbEditarActionPerformed
+
+    private void carregarClienteDaTabela() {
         int linha = tabelaPrincipalClientes.getSelectedRow();
-        if(linha < 0 )
+        if (linha < 0) {
             return;
-        
-        String id = (String) tabelaPrincipalClientes.getValueAt(linha, 0);
-        String nome = (String) tabelaPrincipalClientes.getValueAt(linha, 1);
-        String telefone = (String) tabelaPrincipalClientes.getValueAt(linha, 2);
-        
-        
+        }
+
+        String id = tabelaPrincipalClientes.getValueAt(linha, 0).toString();
+        String nome = tabelaPrincipalClientes.getValueAt(linha, 1).toString();
+        String telefone = tabelaPrincipalClientes.getValueAt(linha, 2).toString();
+
         jtfCodigoClientes.setText(id);
         jtfNomeClientes.setText(nome);
-        jtfTelefoneClientes.setText(telefone);                        
-
-    }//GEN-LAST:event_jbEditarActionPerformed
+        jtfTelefoneClientes.setText(telefone);
+    }
 
     public void limpaCampos() {
         jtfCodigoClientes.setText("");
@@ -332,7 +319,6 @@ public class TelaClientes extends javax.swing.JInternalFrame {
         jtfTelefoneClientes.setText("");
 
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog jDialog1;

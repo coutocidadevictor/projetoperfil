@@ -1,4 +1,4 @@
-package tabela;
+package util;
 
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
@@ -41,9 +41,9 @@ public class Tabela extends AbstractTableModel {
         return colunas[numCol];
     }
 
-    public Object getValueAt(int numLin, int numCol) {
-        Object[] linha = (Object[]) getLinhas().get(numLin);
-        return linha[numCol];
+    public Object getValueAt(int lins, int cols) {
+        Object[] linha = (Object[]) getLinhas().get(lins);
+        return linha[cols];
 
     }
 }

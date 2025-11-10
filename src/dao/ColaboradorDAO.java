@@ -18,7 +18,7 @@ public class ColaboradorDAO {
 
     public void inserir(Colaborador colaborador) throws SQLException {
         // Cria a query
-        String sql = "INSERT INTO colaboradores(nomeColaboradores, telefoneColaboradores) VALUES (?, ?)";
+        String sql = "INSERT INTO colaboradores(nome, telefone) VALUES (?, ?)";
         
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -43,9 +43,9 @@ public class ColaboradorDAO {
             
             while (rs.next()) {
                 Colaborador colaborador = new Colaborador();
-                colaborador.setIdColaboradores(rs.getInt("IdColaboradores"));
-                colaborador.setNome(rs.getString("nomeColaboradores"));
-                colaborador.setTelefone(rs.getString("telefoneColaboradores"));
+                colaborador.setIdColaboradores(rs.getInt("IdColaborador"));
+                colaborador.setNome(rs.getString("nome"));
+                colaborador.setTelefone(rs.getString("telefone"));
                 colaboradores.add(colaborador);
             }
         }
@@ -54,7 +54,7 @@ public class ColaboradorDAO {
 
     public void atualizar(Colaborador colaborador) throws SQLException {
         // Cria a query
-        String sql = "UPDATE colaboradores SET nomeColaboradores = ?, telefoneColaboradores = ? WHERE IdColaboradores = ?";
+        String sql = "UPDATE colaboradores SET nome = ?, telefone = ? WHERE IdColaborador = ?";
         
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -71,7 +71,7 @@ public class ColaboradorDAO {
 
     public void excluir(int idColaborador) throws SQLException {
         // Cria a query
-        String sql = "DELETE FROM colaboradores WHERE IdColaboradores = ?";
+        String sql = "DELETE FROM colaboradores WHERE IdColaborador = ?";
         
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -86,7 +86,7 @@ public class ColaboradorDAO {
 
     public Colaborador buscarPorId(int idColaborador) throws SQLException {
         // Cria a query
-        String sql = "SELECT * FROM colaboradores WHERE IdColaboradores = ?";
+        String sql = "SELECT * FROM colaboradores WHERE IdColaborador = ?";
         
         try (Connection conn = conexao.getConexao();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -98,9 +98,9 @@ public class ColaboradorDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Colaborador colaborador = new Colaborador();
-                    colaborador.setIdColaboradores(rs.getInt("IdColaboradores"));
-                    colaborador.setNome(rs.getString("nomeColaboradores"));
-                    colaborador.setTelefone(rs.getString("telefoneColaboradores"));
+                    colaborador.setIdColaboradores(rs.getInt("IdColaborador"));
+                    colaborador.setNome(rs.getString("nome"));
+                    colaborador.setTelefone(rs.getString("telefone"));
                     return colaborador;
                 }
             }

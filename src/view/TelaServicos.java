@@ -4,39 +4,39 @@
  */
 package view;
 
+import controller.ServicoController;
 import models.Servico;
 import dao.ServicoDAO;
-import tabela.Tabela;
+import util.Tabela;
 import java.sql.SQLException;
+import java.util.List;
 import javax.swing.JOptionPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.TabelaUtils;
 
-/**
- *
- * @author Victor
- */
 public class TelaServicos extends javax.swing.JInternalFrame {
 
-    /**
-     * Creates new form Servicos
-     */
+    ServicoController servicoController;
+
     public TelaServicos() throws SQLException {
         initComponents();
-        ServicoDAO.listaServicos();
+
+        servicoController = new ServicoController();
+
         atualizarTabela();
     }
 
-    
-       private void atualizarTabela() throws SQLException{
-        Tabela modelo = ServicoDAO.obterTabela();
-        
+    private void atualizarTabela() throws SQLException {
+        List<Servico> servicos = servicoController.listarTodos();
+        Tabela modelo = TabelaUtils.criarTabelaServicos(servicos);
+
         tabelaPrincipalServicos.setModel(modelo);
         tabelaPrincipalServicos.getColumnModel().getColumn(0).setPreferredWidth(1);
         tabelaPrincipalServicos.getColumnModel().getColumn(1).setPreferredWidth(200);
         tabelaPrincipalServicos.getColumnModel().getColumn(2).setPreferredWidth(200);
     }
-       
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -113,7 +113,7 @@ public class TelaServicos extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel2.setText("Nome Serviço");
+        jLabel2.setText("Nome");
 
         jLabel3.setText("Valor");
 
@@ -151,11 +151,6 @@ public class TelaServicos extends javax.swing.JInternalFrame {
         jbEditar.setToolTipText("Editar");
         jbEditar.setBorderPainted(false);
         jbEditar.setContentAreaFilled(false);
-        jbEditar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                jbEditarMouseReleased(evt);
-            }
-        });
         jbEditar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jbEditarActionPerformed(evt);
@@ -172,9 +167,9 @@ public class TelaServicos extends javax.swing.JInternalFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
                             .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -236,71 +231,54 @@ public class TelaServicos extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jtfCodigoServicoActionPerformed
 
     private void jbDeletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbDeletarActionPerformed
-        ServicoDAO tipoPagamento = new ServicoDAO();
-        //esse objeto pega os métodos gets e sets
-        Servico excluir = new Servico();
-
-        excluir.setNome(jtfNomeServico.getText());
-        excluir.setValor(jtfNomeServico.getText());
-        excluir.setIdServico(Integer.parseInt(jtfCodigoServico.getText()));
-
-        try {
-            tipoPagamento.excluir(excluir);
-        } catch (SQLException ex) {
-            Logger.getLogger(TelaServicos.class.getName()).log(Level.SEVERE, null, ex);
+        if (jtfCodigoServico.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecione um serviço para excluir",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
         }
 
-        limpaCampos();
-
         try {
-            ServicoDAO.listaServicos();
+            servicoController.excluir(jtfCodigoServico.getText());
+            JOptionPane.showMessageDialog(this, "Serviço excluído com sucesso!",
+                    "Exclusão", JOptionPane.INFORMATION_MESSAGE);
+
+            limpaCampos();
+            atualizarTabela();
+
         } catch (SQLException ex) {
             Logger.getLogger(TelaServicos.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao excluir serviço", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_jbDeletarActionPerformed
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
+        try {
+            boolean sucesso = servicoController.salvar(
+                    jtfNomeServico.getText(),
+                    jtfValorServico.getText(),
+                    jtfCodigoServico.getText()
+            );
 
-        //esse objeto referencia a classe onde irá salvar
-        ServicoDAO cadServicos = new ServicoDAO();
-        //esse objeto pega os métodos gets e sets
-        Servico cadastro = new Servico();
+            if (sucesso) {
+                String mensagem = jtfCodigoServico.getText().isEmpty()
+                        ? "Serviço cadastrado com sucesso!" : "Serviço atualizado com sucesso!";
 
-        cadastro.setNome(jtfNomeServico.getText());
-        cadastro.setValor(jtfValorServico.getText());
-        
-        if (jtfCodigoServico.getText().equals("")) {
+                JOptionPane.showMessageDialog(this, mensagem, "Cadastro de Serviços",
+                        JOptionPane.INFORMATION_MESSAGE);
 
-            try {
-                cadServicos.Cadastrar(cadastro);
+                limpaCampos();
                 atualizarTabela();
-            } catch (SQLException ex) {
-                Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
             }
-            JOptionPane.showMessageDialog(this, "Serviço cadastrado com sucesso!",
-                    "Cadastro de Serviço", //Cria caixa de texto após executada a ação.
-                    JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
-        }else{
-            cadastro.setIdServico(Integer.parseInt(jtfCodigoServico.getText()));
-            try {
-                cadServicos.alterar(cadastro);
-                atualizarTabela();
-            } catch (SQLException ex) {
-                Logger.getLogger(TelaColaboradores.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            JOptionPane.showMessageDialog(this, "Serviço atualizado com sucesso!",
-                    "Atualização de Serviço", //Cria caixa de texto após executada a ação.
-                    JOptionPane.INFORMATION_MESSAGE); //vai pegar, tratar a exception.
+
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Erro de Validação",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            Logger.getLogger(TelaServicos.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Erro ao salvar serviço", "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
-
-       
-
-        
-        limpaCampos();
-        
-        
-        
-
     }//GEN-LAST:event_jbSalvarActionPerformed
 
     private void jbLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLimparActionPerformed
@@ -308,34 +286,32 @@ public class TelaServicos extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jbLimparActionPerformed
 
     private void tabelaPrincipalServicosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaPrincipalServicosMouseClicked
+        carregarServicoDaTabela();
     }//GEN-LAST:event_tabelaPrincipalServicosMouseClicked
 
     private void jbEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbEditarActionPerformed
+        carregarServicoDaTabela();
     }//GEN-LAST:event_jbEditarActionPerformed
 
-    private void jbEditarMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jbEditarMouseReleased
-                int linha = tabelaPrincipalServicos.getSelectedRow();
-        if(linha < 0 )
-            return;
-        
-        String id = (String) tabelaPrincipalServicos.getValueAt(linha, 0);
-        String nome = (String) tabelaPrincipalServicos.getValueAt(linha, 1);
-        String telefone = (String) tabelaPrincipalServicos.getValueAt(linha, 2);
-        
-        
+    private void carregarServicoDaTabela() {
+        int linha = tabelaPrincipalServicos.getSelectedRow();
+        if (linha < 0) return;
+
+        String id = tabelaPrincipalServicos.getValueAt(linha, 0).toString();
+        String nome = tabelaPrincipalServicos.getValueAt(linha, 1).toString();
+        String valor = tabelaPrincipalServicos.getValueAt(linha, 2).toString();
+
         jtfCodigoServico.setText(id);
         jtfNomeServico.setText(nome);
-        jtfValorServico.setText(telefone);   
-        
-    }//GEN-LAST:event_jbEditarMouseReleased
-
+        jtfValorServico.setText(valor);
+    }
+    
     public void limpaCampos() {
         jtfCodigoServico.setText("");
         jtfNomeServico.setText("");
         jtfValorServico.setText("");
 
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog jDialog1;

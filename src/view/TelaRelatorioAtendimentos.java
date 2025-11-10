@@ -4,21 +4,17 @@
  */
 package view;
 
+import controller.AtendimentoController;
+import controller.ClienteController;
+import controller.ColaboradorController;
+import controller.ServicoController;
 import models.Atendimento;
 import models.Servico;
-import dao.AtendimentoDAO;
-import dao.ServicoDAO;
-import javax.swing.JOptionPane;
 import java.sql.SQLException;
-import javax.swing.JOptionPane;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import javax.swing.JOptionPane;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
+import models.Cliente;
+import models.Colaborador;
 
 /**
  *
@@ -26,51 +22,80 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TelaRelatorioAtendimentos extends javax.swing.JInternalFrame {
 
-    ArrayList<Servico> listaServicos;
-    ArrayList<Atendimento> listaAtendimentos;
-
-    DefaultComboBoxModel<Servico> modelServicos;
-
-    DefaultTableModel modelAtendimentos;
+    private AtendimentoController atendimentoController;
+    private ServicoController servicoController;
+    private ClienteController clienteController;
+    private ColaboradorController colaboradorController;
 
     /**
      * Creates new form Servicos
      */
     public TelaRelatorioAtendimentos() throws SQLException {
-        listaServicos = ServicoDAO.listaServicos();
-        modelServicos = new DefaultComboBoxModel<>();
-        for (Servico servico : listaServicos) {
-            modelServicos.addElement(servico);
-        }
+        initComponents();
+        
+        // Inicializa controllers
+        atendimentoController = new AtendimentoController();
+        servicoController = new ServicoController();
+        clienteController = new ClienteController();
+        colaboradorController = new ColaboradorController();
+        
+        atualizarRelatorio();
+    }
 
-        listaAtendimentos = AtendimentoDAO.listaAtendimentos();
+    private void atualizarRelatorio() throws SQLException {
+        List<Atendimento> atendimentos = atendimentoController.listarTodos();
+        
+        DefaultTableModel model = new DefaultTableModel(
+            new String[]{"Código", "Nome Serviço", "Cliente", "Colaborador", "Data Atendimento"}, 0
+        );
 
-        modelAtendimentos = new DefaultTableModel(new String[]{
-            "Código", "Nome Serviço", "Nome Cliente", "Nome Colaborador", "Data Atendimento"
-        }, 0);
-
-        for (Atendimento atendimento : listaAtendimentos) {
-            String nomeServico = "";
-            for (Servico servico: listaServicos){
-                if (servico.getIdServico() == atendimento.getIdServico()){
-                    nomeServico = servico.getNome();
-                    break;
-                }
-            }
+        for (Atendimento atendimento : atendimentos) {
+            String nomeServico = obterNomeServico(atendimento.getIdServico());
+            String nomeCliente = obterNomeCliente(atendimento.getIdClientes());
+            String nomeColaborador = obterNomeColaborador(atendimento.getIdColaboradores());
             
-            Object[] linha = {
+            model.addRow(new Object[]{
                 atendimento.getIdAtendimentos(),
                 nomeServico,
-                atendimento.getIdClientes(),
-                atendimento.getIdColaboradores(),
+                nomeCliente,
+                nomeColaborador,
                 atendimento.getDataAtendimentos()
-            }; 
-            modelAtendimentos.addRow(linha);
+            });
         }
-
-        initComponents();
-
+        
+        tabelaPrincipalrelatorioAtendimentos.setModel(model);
     }
+    
+    private String obterNomeServico(int idServico) throws SQLException {
+        List<Servico> servicos = servicoController.listarTodos();
+        for (Servico servico : servicos) {
+            if (servico.getIdServico() == idServico) {
+                return servico.getNome();
+            }
+        }
+        return "Serviço não encontrado";
+    }
+    
+    private String obterNomeCliente(int idCliente) throws SQLException {
+        List<Cliente> clientes = clienteController.listarTodos();
+        for (Cliente cliente : clientes) {
+            if (cliente.getIdCliente() == idCliente) {
+                return cliente.getNome();
+            }
+        }
+        return "Cliente não encontrado";
+    }
+    
+    private String obterNomeColaborador(int idColaborador) throws SQLException {
+        List<Colaborador> colaboradores = colaboradorController.listarTodos();
+        for (Colaborador colaborador : colaboradores) {
+            if (colaborador.getIdColaboradores() == idColaborador) {
+                return colaborador.getNome();
+            }
+        }
+        return "Colaborador não encontrado";
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -100,7 +125,14 @@ public class TelaRelatorioAtendimentos extends javax.swing.JInternalFrame {
         setTitle("Relatório de Atendimentos");
 
         tabelaPrincipalrelatorioAtendimentos.setBackground(new java.awt.Color(255, 204, 255));
-        tabelaPrincipalrelatorioAtendimentos.setModel(modelAtendimentos);
+        tabelaPrincipalrelatorioAtendimentos.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
         tabelaPrincipalrelatorioAtendimentos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tabelaPrincipalrelatorioAtendimentosMouseClicked(evt);
@@ -131,8 +163,6 @@ public class TelaRelatorioAtendimentos extends javax.swing.JInternalFrame {
     private void tabelaPrincipalrelatorioAtendimentosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaPrincipalrelatorioAtendimentosMouseClicked
 
     }//GEN-LAST:event_tabelaPrincipalrelatorioAtendimentosMouseClicked
-
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog jDialog1;
